@@ -1,0 +1,94 @@
+# =========================
+# .NET / Visual Studio
+# =========================
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache/options
+.vs/
+*.VC.db
+*.VC.VC.opendb
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+AnyCPU/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+!packages/build/
+!packages/repositories.config
+*.nuget.props
+*.nuget.targets
+
+# Rider / ReSharper
+.idea/
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# VS Code
+.vscode/
+
+# Dotnet local tools / artifacts
+.dotnet/
+artifacts/
+
+# Publish output
+publish/
+
+# =========================
+# WPF specific
+# =========================
+# Generated XAML/BAML and design-time files (normally in obj/bin anyway)
+*.g.cs
+*.g.i.cs
+*.baml
+*.cache
+*.wpftmp.csproj
+*.wpftmp
+
+# =========================
+# Logs / temp
+# =========================
+*.log
+*.tmp
+*.temp
+*.pid
+*.seed
+*.orig
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Claude (AI tooling) artifacts
+# =========================
+.claude/
+.claude-cache/
+.claude-code/
+claude-output/
+claude-artifacts/
+*.claude.log
+CLAUDE.md

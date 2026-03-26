@@ -57,11 +57,24 @@ public class SvnService
         }
     }
 
-    public async Task<(bool success, string message)> RelocateAsync(string localPath, string oldUrl, string newUrl)
+    public async Task<(bool success, string message)> RelocateAsync(string localPath, string newUrl)
     {
         try
         {
-            var output = await RunSvnCommandAsync($"relocate \"{oldUrl}\" \"{newUrl}\" \"{localPath}\"");
+            await RunSvnCommandAsync($"relocate \"{newUrl}\" \"{localPath}\"");
+            return (true, "Erfolgreich");
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
+    }
+
+    public async Task<(bool success, string message)> SwitchAsync(string localPath, string newUrl)
+    {
+        try
+        {
+            await RunSvnCommandAsync($"switch \"{newUrl}\" \"{localPath}\"");
             return (true, "Erfolgreich");
         }
         catch (Exception ex)

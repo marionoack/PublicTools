@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -20,12 +21,13 @@ public class MainViewModel : INotifyPropertyChanged
     private bool _isScanning;
     private bool _allSelected;
     private SearchMode _searchMode = SearchMode.Contains;
+    private SvnOperation _selectedOperation = SvnOperation.Relocate;
 
     public MainViewModel()
     {
         ScanCommand = new RelayCommand(async () => await ScanAsync(), () => !IsScanning && !string.IsNullOrWhiteSpace(RootPath));
         CheckCommand = new RelayCommand(async () => await CheckRevisionsAsync(), () => !IsScanning && WorkingCopies.Any(wc => wc.IsSelected));
-        RelocateCommand = new RelayCommand(async () => await RelocateAsync(), () => !IsScanning && HasValidSelection());
+        ExecuteCommand = new RelayCommand(async () => await ExecuteAsync(), () => !IsScanning && HasValidSelection());
         BrowseCommand = new RelayCommand(Browse);
 
         LoadSettings();
@@ -71,9 +73,32 @@ public class MainViewModel : INotifyPropertyChanged
         set
         {
             if (SetField(ref _searchMode, value))
+            {
+                ApplyOperationForSearchMode();
                 UpdateNewUrls();
+                OnPropertyChanged(nameof(IsOperationSelectable));
+                OnPropertyChanged(nameof(ExecuteButtonText));
+            }
         }
     }
+
+    public SvnOperation SelectedOperation
+    {
+        get => _selectedOperation;
+        set
+        {
+            if (SetField(ref _selectedOperation, value))
+                OnPropertyChanged(nameof(ExecuteButtonText));
+        }
+    }
+
+    public bool IsOperationSelectable => SearchMode == SearchMode.Contains;
+
+    public IReadOnlyList<SvnOperation> OperationOptions { get; } = Enum.GetValues<SvnOperation>().ToList();
+
+    public string ExecuteButtonText => SelectedOperation == SvnOperation.Switch
+        ? "Switch ausführen"
+        : "Relocate ausführen";
 
     public string StatusText
     {
@@ -105,8 +130,28 @@ public class MainViewModel : INotifyPropertyChanged
 
     public ICommand ScanCommand { get; }
     public ICommand CheckCommand { get; }
-    public ICommand RelocateCommand { get; }
+    public ICommand ExecuteCommand { get; }
     public ICommand BrowseCommand { get; }
+
+    public static string WindowTitle
+    {
+        get
+        {
+            var asm = Assembly.GetExecutingAssembly();
+            var version = asm.GetName().Version;
+            var buildDate = GetBuildDate(version);
+            var versionStr = version is not null ? $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}" : "1.0.0.0";
+            return $"SVN Solution Relocator v{versionStr} (Build: {buildDate:yyyy-MM-dd})";
+        }
+    }
+
+    private static DateTime GetBuildDate(Version? version)
+    {
+        if (version is null) return DateTime.Now;
+        // With AssemblyVersion("1.0.*"): Build = days since 2000-01-01, Revision = seconds since midnight / 2
+        var baseDate = new DateTime(2000, 1, 1);
+        return baseDate.AddDays(version.Build).AddSeconds(version.Revision * 2);
+    }
 
     private void Browse()
     {
@@ -119,6 +164,16 @@ public class MainViewModel : INotifyPropertyChanged
         {
             RootPath = dialog.FolderName;
         }
+    }
+
+    private void ApplyOperationForSearchMode()
+    {
+        SelectedOperation = SearchMode switch
+        {
+            SearchMode.StartsWith => SvnOperation.Relocate,
+            SearchMode.EndsWith => SvnOperation.Switch,
+            _ => _selectedOperation
+        };
     }
 
     private async Task ScanAsync()
@@ -217,28 +272,34 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task RelocateAsync()
+    private async Task ExecuteAsync()
     {
-        var selected = WorkingCopies.Where(wc => wc.IsSelected && !string.IsNullOrWhiteSpace(wc.NewUrl)).ToList();
+        var selected = WorkingCopies.Where(wc => wc.IsSelected && !string.IsNullOrWhiteSpace(wc.NewUrl)
+            && !string.Equals(wc.CurrentUrl, wc.NewUrl, StringComparison.OrdinalIgnoreCase)).ToList();
 
         if (selected.Count == 0) return;
 
+        var opName = SelectedOperation == SvnOperation.Switch ? "Switch" : "Relocate";
+
         var result = MessageBox.Show(
-            $"Sollen {selected.Count} Working Copies relocated werden?",
-            "Relocate bestätigen",
+            $"Sollen {selected.Count} Working Copies per {opName} umgestellt werden?",
+            $"{opName} bestätigen",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
         if (result != MessageBoxResult.Yes) return;
 
         IsScanning = true;
-        StatusText = $"Relocate für {selected.Count} Einträge...";
+        StatusText = $"{opName} für {selected.Count} Einträge...";
 
         int success = 0, failed = 0;
 
         foreach (var wc in selected)
         {
-            var (ok, message) = await _svnService.RelocateAsync(wc.LocalPath, wc.CurrentUrl, wc.NewUrl);
+            var (ok, message) = SelectedOperation == SvnOperation.Switch
+                ? await _svnService.SwitchAsync(wc.LocalPath, wc.NewUrl)
+                : await _svnService.RelocateAsync(wc.LocalPath, wc.NewUrl);
+
             if (ok)
             {
                 wc.Status = "Erfolgreich";
@@ -253,7 +314,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
 
         UpdateNewUrls();
-        StatusText = $"Relocate abgeschlossen: {success} erfolgreich, {failed} fehlgeschlagen";
+        StatusText = $"{opName} abgeschlossen: {success} erfolgreich, {failed} fehlgeschlagen";
         IsScanning = false;
     }
 
@@ -298,6 +359,7 @@ public class MainViewModel : INotifyPropertyChanged
         _searchText = s.SearchText;
         _replaceText = s.ReplaceText;
         _searchMode = s.SearchMode;
+        ApplyOperationForSearchMode();
     }
 
     public void SaveSettings(double windowWidth, double windowHeight)

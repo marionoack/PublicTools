@@ -1,0 +1,188 @@
+<Window x:Class="TranslationHelper.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="TranslationHelper"
+        Icon="{StaticResource AppIcon}"
+        Width="780" Height="580"
+        MinWidth="600" MinHeight="460"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.InputBindings>
+        <KeyBinding Key="V" Modifiers="Ctrl" Command="{Binding PasteCommand}"/>
+        <KeyBinding Key="C" Modifiers="Ctrl+Shift" Command="{Binding CopyResultCommand}"/>
+        <KeyBinding Key="Return" Modifiers="Ctrl" Command="{Binding ProcessCommand}"/>
+    </Window.InputBindings>
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style x:Key="ModeButton" TargetType="RadioButton">
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" BorderBrush="#BBBBBB" BorderThickness="1"
+                                CornerRadius="3" Background="White" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#0078D4"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#005A9E"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0078D4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SmallModeButton" TargetType="RadioButton" BasedOn="{StaticResource ModeButton}">
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+        </Style>
+
+        <Style x:Key="FlagButton" TargetType="RadioButton" BasedOn="{StaticResource ModeButton}">
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+            <Setter Property="ToolTipService.InitialShowDelay" Value="300"/>
+        </Style>
+
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: Mode + Settings toolbar -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,8">
+            <Button DockPanel.Dock="Right" Content="⚙ Einstellungen"
+                    Style="{StaticResource ActionButton}" Margin="0"
+                    Command="{Binding OpenSettingsCommand}"/>
+
+            <StackPanel Orientation="Horizontal">
+                <RadioButton Style="{StaticResource ModeButton}" Content="Übersetzen  Ctrl+1"
+                             IsChecked="{Binding IsTranslateMode}"/>
+                <RadioButton Style="{StaticResource ModeButton}" Content="Korrektur leicht  Ctrl+2"
+                             IsChecked="{Binding IsLightCorrectionMode}"/>
+                <RadioButton Style="{StaticResource ModeButton}" Content="Ausformulieren  Ctrl+3"
+                             IsChecked="{Binding IsReformulationMode}"/>
+
+                <!-- Language selector: only shown in Translate mode -->
+                <StackPanel Orientation="Horizontal"
+                            Visibility="{Binding ShowLanguageSelector, Converter={StaticResource BoolToVis}}"
+                            Margin="10,0,0,0">
+                    <TextBlock Text="Zielsprache:" VerticalAlignment="Center"
+                               Margin="0,0,6,0" Foreground="Gray" FontSize="11"/>
+                    <RadioButton Style="{StaticResource FlagButton}"
+                                 IsChecked="{Binding IsEnglish}"
+                                 ToolTip="Englisch  (Ctrl+E)">🇬🇧</RadioButton>
+                    <RadioButton Style="{StaticResource FlagButton}"
+                                 IsChecked="{Binding IsGerman}"
+                                 Margin="0"
+                                 ToolTip="Deutsch  (Ctrl+D)">🇩🇪</RadioButton>
+                </StackPanel>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Row 1: Input format labels -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,4">
+            <TextBlock Text="Eingabe:" VerticalAlignment="Center"
+                       Margin="0,0,6,0" FontSize="11" Foreground="Gray"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="Plain  Ctrl+P"
+                         IsChecked="{Binding IsInputPlain}"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="Markdown  Ctrl+M"
+                         IsChecked="{Binding IsInputMarkdown}" Margin="0"/>
+        </StackPanel>
+
+        <!-- Row 2: Input text area -->
+        <Border Grid.Row="2" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="3">
+            <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="True" AcceptsTab="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     FontFamily="Consolas" FontSize="13"
+                     BorderThickness="0" Padding="8"/>
+        </Border>
+
+        <!-- Row 3: Action toolbar -->
+        <Grid Grid.Row="3" Margin="0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="Einfügen  Ctrl+V"
+                    Style="{StaticResource ActionButton}"
+                    Command="{Binding PasteCommand}"/>
+
+            <Button Grid.Column="1" Command="{Binding ProcessCommand}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                        <Setter Property="Content" Value="▶ Verarbeiten  Ctrl+Enter"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsProcessing}" Value="True">
+                                <Setter Property="Content" Value="⏳ Wird verarbeitet…"/>
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <!-- Export format in center -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
+                <TextBlock Text="Export:" VerticalAlignment="Center"
+                           Margin="0,0,6,0" FontSize="11" Foreground="Gray"/>
+                <RadioButton Style="{StaticResource SmallModeButton}" Content="Plain"
+                             IsChecked="{Binding IsExportPlain}"/>
+                <RadioButton Style="{StaticResource SmallModeButton}" Content="Markdown"
+                             IsChecked="{Binding IsExportMarkdown}" Margin="0"/>
+            </StackPanel>
+
+            <Button Grid.Column="4" Content="Kopieren  Ctrl+Shift+C"
+                    Style="{StaticResource ActionButton}" Margin="0"
+                    Command="{Binding CopyResultCommand}"/>
+        </Grid>
+
+        <!-- Row 4: Result text area -->
+        <Border Grid.Row="4" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="3">
+            <TextBox Text="{Binding ResultText, Mode=OneWay}"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     FontFamily="Consolas" FontSize="13"
+                     BorderThickness="0" Padding="8"
+                     Background="#FAFAFA"/>
+        </Border>
+
+        <!-- Row 5: Status bar -->
+        <TextBlock Grid.Row="5"
+                   Text="{Binding StatusMessage}"
+                   Foreground="Gray" FontSize="11"
+                   Margin="0,4,0,0"
+                   TextTrimming="CharacterEllipsis"/>
+    </Grid>
+</Window>

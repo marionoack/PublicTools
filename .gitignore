@@ -83,6 +83,11 @@ Thumbs.db
 desktop.ini
 
 # =========================
+# VS Tooling
+# =========================
+.cr/
+
+# =========================
 # Claude (AI tooling) artifacts
 # =========================
 .claude/

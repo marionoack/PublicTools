@@ -22,6 +22,8 @@ public class MainViewModel : INotifyPropertyChanged
     private TextFormat _selectedInputFormat;
     private TextFormat _selectedExportFormat;
     private bool _isProcessing;
+    private Tone _selectedTone;
+    private Audience _selectedAudience;
 
     public MainViewModel(
         ClipboardService clipboard,
@@ -97,6 +99,29 @@ public class MainViewModel : INotifyPropertyChanged
         get => _selectedExportFormat;
         set { _selectedExportFormat = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsExportMarkdown)); OnPropertyChanged(nameof(IsExportPlain)); }
     }
+
+    public Tone SelectedTone
+    {
+        get => _selectedTone;
+        set { _selectedTone = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsToneNone)); OnPropertyChanged(nameof(IsToneFormal)); OnPropertyChanged(nameof(IsToneFriendly)); OnPropertyChanged(nameof(IsToneDirect)); OnPropertyChanged(nameof(IsToneCasual)); }
+    }
+
+    public Audience SelectedAudience
+    {
+        get => _selectedAudience;
+        set { _selectedAudience = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsAudienceNone)); OnPropertyChanged(nameof(IsAudienceCustomer)); OnPropertyChanged(nameof(IsAudienceColleague)); OnPropertyChanged(nameof(IsAudienceSuperior)); }
+    }
+
+    public bool IsToneNone { get => SelectedTone == Tone.None; set { if (value) SelectedTone = Tone.None; } }
+    public bool IsToneFormal { get => SelectedTone == Tone.Formal; set { if (value) SelectedTone = Tone.Formal; } }
+    public bool IsToneFriendly { get => SelectedTone == Tone.Friendly; set { if (value) SelectedTone = Tone.Friendly; } }
+    public bool IsToneDirect { get => SelectedTone == Tone.Direct; set { if (value) SelectedTone = Tone.Direct; } }
+    public bool IsToneCasual { get => SelectedTone == Tone.Casual; set { if (value) SelectedTone = Tone.Casual; } }
+
+    public bool IsAudienceNone { get => SelectedAudience == Audience.None; set { if (value) SelectedAudience = Audience.None; } }
+    public bool IsAudienceCustomer { get => SelectedAudience == Audience.Customer; set { if (value) SelectedAudience = Audience.Customer; } }
+    public bool IsAudienceColleague { get => SelectedAudience == Audience.Colleague; set { if (value) SelectedAudience = Audience.Colleague; } }
+    public bool IsAudienceSuperior { get => SelectedAudience == Audience.Superior; set { if (value) SelectedAudience = Audience.Superior; } }
 
     // Convenience properties for radio button binding
     public bool IsTranslateMode
@@ -211,7 +236,9 @@ public class MainViewModel : INotifyPropertyChanged
             InputText,
             SelectedMode,
             SelectedTargetLanguage,
-            SelectedInputFormat);
+            SelectedInputFormat,
+            SelectedTone,
+            SelectedAudience);
 
         IsProcessing = false;
 

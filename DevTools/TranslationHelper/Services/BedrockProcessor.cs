@@ -26,7 +26,9 @@ public class BedrockProcessor : ITextProcessor
         string inputText,
         ProcessingMode mode,
         TargetLanguage targetLanguage,
-        TextFormat inputFormat)
+        TextFormat inputFormat,
+        Tone tone,
+        Audience audience)
     {
         if (string.IsNullOrWhiteSpace(inputText))
             return new ProcessingResult(string.Empty, false, "Kein Text vorhanden.");
@@ -36,7 +38,7 @@ public class BedrockProcessor : ITextProcessor
 
         try
         {
-            var prompt = BuildPrompt(inputText, mode, targetLanguage, inputFormat);
+            var prompt = BuildPrompt(inputText, mode, targetLanguage, inputFormat, tone, audience);
             var result = await InvokeClaudeAsync(prompt);
             return new ProcessingResult(result, true, null);
         }
@@ -62,27 +64,59 @@ public class BedrockProcessor : ITextProcessor
         }
     }
 
-    private string BuildPrompt(string inputText, ProcessingMode mode, TargetLanguage targetLanguage, TextFormat inputFormat)
+    private string BuildPrompt(string inputText, ProcessingMode mode, TargetLanguage targetLanguage, TextFormat inputFormat, Tone tone, Audience audience)
     {
         var formatNote = inputFormat == TextFormat.Markdown
             ? "Der Text enthält Markdown-Formatierung. Bitte die Markdown-Struktur (Überschriften, Listen, Fettdruck usw.) exakt erhalten."
             : "Der Text ist unformatierter Klartext.";
 
+        var flairNote = BuildFlairNote(tone, audience);
+
         return mode switch
         {
-            ProcessingMode.Translate => BuildTranslationPrompt(inputText, targetLanguage, formatNote),
+            ProcessingMode.Translate => BuildTranslationPrompt(inputText, targetLanguage, formatNote, flairNote),
             ProcessingMode.LightCorrection => BuildLightCorrectionPrompt(inputText, formatNote),
-            ProcessingMode.ImprovedReformulation => BuildReformulationPrompt(inputText, formatNote),
+            ProcessingMode.ImprovedReformulation => BuildReformulationPrompt(inputText, formatNote, flairNote),
             _ => throw new ArgumentOutOfRangeException(nameof(mode))
         };
     }
 
-    private static string BuildTranslationPrompt(string inputText, TargetLanguage targetLanguage, string formatNote)
+    private static string BuildFlairNote(Tone tone, Audience audience)
+    {
+        var parts = new List<string>();
+
+        var toneDesc = tone switch
+        {
+            Tone.Formal => "förmlich (Sie-Form, geschäftlich korrekt)",
+            Tone.Friendly => "freundlich (höflich aber nahbar)",
+            Tone.Direct => "direkt (knapp, auf den Punkt)",
+            Tone.Casual => "locker (umgangssprachlich, Du-Form)",
+            _ => null
+        };
+
+        var audienceDesc = audience switch
+        {
+            Audience.Customer => "an einen Kunden (extern, professionell)",
+            Audience.Colleague => "an einen Kollegen (intern, unkompliziert)",
+            Audience.Superior => "an einen Vorgesetzten (respektvoll, strukturiert)",
+            _ => null
+        };
+
+        if (toneDesc != null) parts.Add($"Tonalität: {toneDesc}");
+        if (audienceDesc != null) parts.Add($"Zielgruppe: {audienceDesc}");
+
+        if (parts.Count == 0) return string.Empty;
+
+        return "Bitte den folgenden Stil verwenden: " + string.Join(". ", parts) + ".";
+    }
+
+    private static string BuildTranslationPrompt(string inputText, TargetLanguage targetLanguage, string formatNote, string flairNote)
     {
         var targetLang = targetLanguage == TargetLanguage.English ? "Englisch" : "Deutsch";
+        var flair = string.IsNullOrEmpty(flairNote) ? "" : $"\n            {flairNote}";
         return $"""
             Übersetze den folgenden Text ins {targetLang}.
-            {formatNote}
+            {formatNote}{flair}
             Gib ausschließlich den übersetzten Text zurück, ohne Erklärungen oder Kommentare.
 
             Text:
@@ -104,13 +138,14 @@ public class BedrockProcessor : ITextProcessor
             """;
     }
 
-    private static string BuildReformulationPrompt(string inputText, string formatNote)
+    private static string BuildReformulationPrompt(string inputText, string formatNote, string flairNote)
     {
+        var flair = string.IsNullOrEmpty(flairNote) ? "" : $"\n            {flairNote}";
         return $"""
             Formuliere den folgenden Text in einem gehobenen, professionellen Stil um.
             Behalte den ursprünglichen Inhalt und die Sprache des Textes bei.
             Verbessere Ausdruck, Klarheit und Fluss, ohne die Bedeutung zu verändern.
-            {formatNote}
+            {formatNote}{flair}
             Gib ausschließlich den umformulierten Text zurück, ohne Erklärungen oder Kommentare.
 
             Text:

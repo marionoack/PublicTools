@@ -66,6 +66,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -113,8 +114,35 @@
                          IsChecked="{Binding IsInputMarkdown}" Margin="0"/>
         </StackPanel>
 
-        <!-- Row 2: Input text area -->
-        <Border Grid.Row="2" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="3">
+        <!-- Row 2: Flair selectors (Tone + Audience) -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,4">
+            <TextBlock Text="Tonalität:" VerticalAlignment="Center"
+                       Margin="0,0,6,0" FontSize="11" Foreground="Gray"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="—" GroupName="Tone"
+                         IsChecked="{Binding IsToneNone}" ToolTip="Neutral (kein Flair)"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="Förmlich" GroupName="Tone"
+                         IsChecked="{Binding IsToneFormal}"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="Freundlich" GroupName="Tone"
+                         IsChecked="{Binding IsToneFriendly}"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="Direkt" GroupName="Tone"
+                         IsChecked="{Binding IsToneDirect}"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="Locker" GroupName="Tone"
+                         IsChecked="{Binding IsToneCasual}"/>
+
+            <TextBlock Text="Zielgruppe:" VerticalAlignment="Center"
+                       Margin="14,0,6,0" FontSize="11" Foreground="Gray"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="—" GroupName="Audience"
+                         IsChecked="{Binding IsAudienceNone}" ToolTip="Keine Zielgruppe"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="Kunde" GroupName="Audience"
+                         IsChecked="{Binding IsAudienceCustomer}"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="Kollege" GroupName="Audience"
+                         IsChecked="{Binding IsAudienceColleague}"/>
+            <RadioButton Style="{StaticResource SmallModeButton}" Content="Vorgesetzter" GroupName="Audience"
+                         IsChecked="{Binding IsAudienceSuperior}"/>
+        </StackPanel>
+
+        <!-- Row 3: Input text area -->
+        <Border Grid.Row="3" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="3">
             <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
                      AcceptsReturn="True" AcceptsTab="True"
                      TextWrapping="Wrap"
@@ -123,8 +151,8 @@
                      BorderThickness="0" Padding="8"/>
         </Border>
 
-        <!-- Row 3: Action toolbar -->
-        <Grid Grid.Row="3" Margin="0,6">
+        <!-- Row 4: Action toolbar -->
+        <Grid Grid.Row="4" Margin="0,6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -166,8 +194,8 @@
                     Command="{Binding CopyResultCommand}"/>
         </Grid>
 
-        <!-- Row 4: Result text area -->
-        <Border Grid.Row="4" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="3">
+        <!-- Row 5: Result text area -->
+        <Border Grid.Row="5" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="3">
             <TextBox Text="{Binding ResultText, Mode=OneWay}"
                      IsReadOnly="True"
                      AcceptsReturn="True"
@@ -178,8 +206,8 @@
                      Background="#FAFAFA"/>
         </Border>
 
-        <!-- Row 5: Status bar -->
-        <TextBlock Grid.Row="5"
+        <!-- Row 6: Status bar -->
+        <TextBlock Grid.Row="6"
                    Text="{Binding StatusMessage}"
                    Foreground="Gray" FontSize="11"
                    Margin="0,4,0,0"

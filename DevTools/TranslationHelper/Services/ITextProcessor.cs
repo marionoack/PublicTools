@@ -10,5 +10,7 @@ public interface ITextProcessor
         string inputText,
         ProcessingMode mode,
         TargetLanguage targetLanguage,
-        TextFormat inputFormat);
+        TextFormat inputFormat,
+        Tone tone,
+        Audience audience);
 }

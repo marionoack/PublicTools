@@ -1,0 +1,69 @@
+<Window x:Class="PasswordGenerate.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Passwort-Generator"
+        Width="860" Height="440"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Icon="Resources/app.ico"
+        FontSize="14">
+    <Window.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding RegenerateCommand}" />
+        <KeyBinding Key="F6" Command="{Binding ToggleVisibilityCommand}" />
+    </Window.InputBindings>
+    <DockPanel Margin="10">
+        <!-- Toolbar -->
+        <ToolBar DockPanel.Dock="Top" Margin="0,0,0,10">
+            <Button Command="{Binding RegenerateCommand}" Content="Neu erzeugen (F5)" Padding="10,5" FontSize="14" />
+            <Button Command="{Binding ToggleVisibilityCommand}" Content="Ein-/Ausblenden (F6)" Padding="10,5" FontSize="14" />
+        </ToolBar>
+
+        <!-- Einstellungen unten -->
+        <Grid DockPanel.Dock="Bottom" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Ausschlussliste (Buchstaben):" VerticalAlignment="Center" Margin="0,0,10,6" />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ExcludeChars, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" FontFamily="Consolas" FontSize="14" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Sonderzeichen:" VerticalAlignment="Center" Margin="0,0,10,0" />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SpecialChars, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas" FontSize="14" />
+        </Grid>
+
+        <!-- Passwort-Grid -->
+        <Grid x:Name="PasswordGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="36" />
+                <RowDefinition Height="42" />
+                <RowDefinition Height="42" />
+                <RowDefinition Height="42" />
+                <RowDefinition Height="42" />
+                <RowDefinition Height="42" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="140" />
+                <ColumnDefinition Width="8*" />
+                <ColumnDefinition Width="12*" />
+                <ColumnDefinition Width="16*" />
+                <ColumnDefinition Width="20*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Header -->
+            <TextBlock Grid.Row="0" Grid.Column="1" Text="8" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="0" Grid.Column="2" Text="12" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="0" Grid.Column="3" Text="16" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="0" Grid.Column="4" Text="20" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+            <!-- Row Labels -->
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Zahlen" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Hex" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="a-z + 0-9" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="A-Z + a-z + 0-9" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="+ Sonderzeichen" VerticalAlignment="Center" />
+        </Grid>
+    </DockPanel>
+</Window>

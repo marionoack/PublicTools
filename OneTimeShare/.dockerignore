@@ -1,0 +1,8 @@
+.git
+obj
+bin
+App_Data
+app.db
+*.user
+*.suo
+.vs

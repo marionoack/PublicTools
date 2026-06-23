@@ -1,0 +1,71 @@
+@page
+@model OneTimeShare.Pages.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "My Shares";
+    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Shares</h2>
+    <a asp-page="/Dashboard/Create" class="btn btn-dark">+ New Share</a>
+</div>
+
+@if (!Model.Assets.Any())
+{
+    <div class="alert alert-info">You have no shares yet. <a asp-page="/Dashboard/Create">Create one now.</a></div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Created</th>
+                    <th>Expires</th>
+                    <th>Downloads</th>
+                    <th>Max</th>
+                    <th>Status</th>
+                    <th>Share Link</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var asset in Model.Assets)
+                {
+                    var statusClass = asset.IsAvailable ? "text-success" : "text-danger";
+                    var statusText = asset.IsExpired ? "Expired" : asset.IsLimitReached ? "Limit reached" : "Active";
+                    var shareUrl = $"{baseUrl}/s/{asset.PublicToken}";
+                    <tr>
+                        <td>@asset.DisplayName</td>
+                        <td>
+                            @if (asset.AssetType == OneTimeShare.Models.AssetType.File)
+                            { <span class="badge bg-primary">📄 File</span> }
+                            else
+                            { <span class="badge bg-secondary">🔑 Secret</span> }
+                        </td>
+                        <td>@asset.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@(asset.ExpiresAt.HasValue ? asset.ExpiresAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "—")</td>
+                        <td>@asset.AccessCount</td>
+                        <td>@(asset.MaxAccessCount.HasValue ? asset.MaxAccessCount.ToString() : "—")</td>
+                        <td><span class="@statusClass fw-bold">@statusText</span></td>
+                        <td>
+                            <div class="input-group input-group-sm" style="max-width:280px">
+                                <input type="text" class="form-control form-control-sm" value="@shareUrl" readonly id="url-@asset.Id" />
+                                <button class="btn btn-outline-secondary btn-sm" type="button"
+                                        onclick="navigator.clipboard.writeText('@shareUrl')">Copy</button>
+                            </div>
+                        </td>
+                        <td>
+                            <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Delete this share?')">
+                                <input type="hidden" name="id" value="@asset.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

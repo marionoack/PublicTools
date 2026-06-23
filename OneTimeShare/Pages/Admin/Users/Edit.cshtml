@@ -1,0 +1,86 @@
+@page "{id}"
+@model OneTimeShare.Pages.Admin.Users.EditModel
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<h2 class="mb-4">Edit User: @Model.Input.Username</h2>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header">Profile & Role</div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="Save">
+                    <input type="hidden" asp-for="Input.Id" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Username" class="form-label">Username</label>
+                        <input asp-for="Input.Username" class="form-control" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.DisplayName" class="form-label">Display Name</label>
+                        <input asp-for="Input.DisplayName" class="form-control" />
+                        <span asp-validation-for="Input.DisplayName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        @if (Model.IsSelf)
+                        {
+                            <input asp-for="Input.IsAdmin" class="form-check-input" type="checkbox" disabled />
+                        }
+                        else
+                        {
+                            <input asp-for="Input.IsAdmin" class="form-check-input" type="checkbox" />
+                        }
+                        <label asp-for="Input.IsAdmin" class="form-check-label">Administrator</label>
+                        @if (Model.IsSelf)
+                        { <div class="form-text text-muted">Cannot change your own admin role.</div> }
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        @if (Model.IsSelf)
+                        {
+                            <input asp-for="Input.IsDisabled" class="form-check-input" type="checkbox" disabled />
+                        }
+                        else
+                        {
+                            <input asp-for="Input.IsDisabled" class="form-check-input" type="checkbox" />
+                        }
+                        <label asp-for="Input.IsDisabled" class="form-check-label">Disabled</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-dark">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header">Reset Password</div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="ResetPassword">
+                    <input type="hidden" asp-for="Input.Id" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <div class="mb-3">
+                        <label asp-for="ResetPwd.NewPassword" class="form-label">New Password</label>
+                        <input asp-for="ResetPwd.NewPassword" class="form-control" type="password" autocomplete="new-password" />
+                        <span asp-validation-for="ResetPwd.NewPassword" class="text-danger small"></span>
+                    </div>
+                    <button type="submit" class="btn btn-warning">Reset Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-page="/Admin/Users/Index" class="btn btn-outline-secondary">← Back</a>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

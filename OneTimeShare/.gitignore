@@ -1,0 +1,19 @@
+## .NET
+obj/
+bin/
+*.user
+*.suo
+.vs/
+*.swp
+
+## Local data
+app.db
+App_Data/
+
+## Env overrides with secrets (never commit)
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.local.json
+
+## Deployment scripts contain secrets when filled in – use git-crypt or keep them local
+deploy/*.filled.sh

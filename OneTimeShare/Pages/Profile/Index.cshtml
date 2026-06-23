@@ -1,0 +1,62 @@
+@page
+@model OneTimeShare.Pages.Profile.IndexModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h2 class="mb-4">My Profile</h2>
+
+@if (TempData["Success"] is string msg)
+{
+    <div class="alert alert-success alert-dismissible fade show">@msg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header">Display Name</div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="UpdateName">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <div class="mb-3">
+                        <label asp-for="NameInput.DisplayName" class="form-label">Display Name</label>
+                        <input asp-for="NameInput.DisplayName" class="form-control" />
+                        <span asp-validation-for="NameInput.DisplayName" class="text-danger small"></span>
+                    </div>
+                    <button type="submit" class="btn btn-dark">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header">Change Password</div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="ChangePassword">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <div class="mb-3">
+                        <label asp-for="PwdInput.CurrentPassword" class="form-label">Current Password</label>
+                        <input asp-for="PwdInput.CurrentPassword" class="form-control" type="password" autocomplete="current-password" />
+                        <span asp-validation-for="PwdInput.CurrentPassword" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="PwdInput.NewPassword" class="form-label">New Password</label>
+                        <input asp-for="PwdInput.NewPassword" class="form-control" type="password" autocomplete="new-password" />
+                        <span asp-validation-for="PwdInput.NewPassword" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="PwdInput.ConfirmPassword" class="form-label">Confirm Password</label>
+                        <input asp-for="PwdInput.ConfirmPassword" class="form-control" type="password" autocomplete="new-password" />
+                        <span asp-validation-for="PwdInput.ConfirmPassword" class="text-danger small"></span>
+                    </div>
+                    <button type="submit" class="btn btn-dark">Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

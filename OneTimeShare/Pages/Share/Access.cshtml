@@ -1,0 +1,78 @@
+@page "/s/{token}"
+@model OneTimeShare.Pages.Share.AccessModel
+@{
+    ViewData["Title"] = "Shared Content";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-7">
+
+        @if (Model.State == OneTimeShare.Pages.Share.AccessModel.PageState.NotFound)
+        {
+            <div class="alert alert-warning text-center">
+                <h4>🔍 Not found</h4>
+                <p>This share link does not exist or has been removed.</p>
+            </div>
+        }
+        else if (Model.State == OneTimeShare.Pages.Share.AccessModel.PageState.Expired)
+        {
+            <div class="alert alert-danger text-center">
+                <h4>⏰ Expired</h4>
+                <p>This share has expired and is no longer available.</p>
+            </div>
+        }
+        else if (Model.State == OneTimeShare.Pages.Share.AccessModel.PageState.LimitReached)
+        {
+            <div class="alert alert-danger text-center">
+                <h4>🚫 Limit reached</h4>
+                <p>This share has reached its maximum number of downloads.</p>
+            </div>
+        }
+        else if (Model.State == OneTimeShare.Pages.Share.AccessModel.PageState.NeedsPassword)
+        {
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">🔒 Password required</h4>
+                    <p class="text-muted">This share is password protected.</p>
+                    <form method="post">
+                        <input type="hidden" asp-for="Token" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <div class="mb-3">
+                            <label asp-for="SharePassword" class="form-label">Password</label>
+                            <input asp-for="SharePassword" class="form-control" type="password" autofocus />
+                        </div>
+                        <button type="submit" class="btn btn-dark">Unlock</button>
+                    </form>
+                </div>
+            </div>
+        }
+        else if (Model.State == OneTimeShare.Pages.Share.AccessModel.PageState.ShowSecret)
+        {
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white">🔑 Secret</div>
+                <div class="card-body">
+                    <pre class="mb-0 user-select-all" style="white-space:pre-wrap;word-break:break-all">@Model.SecretText</pre>
+                </div>
+                <div class="card-footer text-muted small">
+                    Copy this secret now — it may not be available after you leave.
+                </div>
+            </div>
+        }
+        else if (Model.State == OneTimeShare.Pages.Share.AccessModel.PageState.FileDownload)
+        {
+            <div class="card shadow-sm border-primary">
+                <div class="card-header bg-primary text-white">📄 File ready</div>
+                <div class="card-body text-center">
+                    <p>Your file is ready to download.</p>
+                    <a href="/s/@Model.Token/download?pwd=@Model.EncodedPassword" class="btn btn-primary btn-lg">⬇ Download</a>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

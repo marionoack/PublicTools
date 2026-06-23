@@ -1,0 +1,87 @@
+@page
+@model OneTimeShare.Pages.Dashboard.CreateModel
+@{
+    ViewData["Title"] = "New Share";
+}
+
+<h2 class="mb-4">New Share</h2>
+
+<div class="row">
+    <div class="col-md-7">
+        <form method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Input.DisplayName" class="form-label">Name / Title <span class="text-danger">*</span></label>
+                <input asp-for="Input.DisplayName" class="form-control" placeholder="e.g. DB credentials, contract.pdf" />
+                <span asp-validation-for="Input.DisplayName" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Type <span class="text-danger">*</span></label>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="Input.AssetType" value="Secret" id="typeSecret" />
+                        <label class="form-check-label" for="typeSecret">🔑 Secret text</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="Input.AssetType" value="File" id="typeFile" />
+                        <label class="form-check-label" for="typeFile">📄 File</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3" id="secretSection">
+                <label asp-for="Input.SecretText" class="form-label">Secret text</label>
+                <textarea asp-for="Input.SecretText" class="form-control font-monospace" rows="5"
+                          placeholder="Paste your secret here..."></textarea>
+                <span asp-validation-for="Input.SecretText" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3" id="fileSection" style="display:none">
+                <label asp-for="Input.File" class="form-label">File <small class="text-muted">(max 5 MB)</small></label>
+                <input asp-for="Input.File" class="form-control" type="file" />
+                <span asp-validation-for="Input.File" class="text-danger small"></span>
+            </div>
+
+            <hr />
+            <h6 class="text-muted">Access restrictions (all optional)</h6>
+
+            <div class="mb-3">
+                <label asp-for="Input.SharePassword" class="form-label">Share password</label>
+                <input asp-for="Input.SharePassword" class="form-control" type="password" autocomplete="new-password"
+                       placeholder="Leave blank for no password" />
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Input.MaxAccessCount" class="form-label">Max downloads / views</label>
+                    <input asp-for="Input.MaxAccessCount" class="form-control" type="number" min="1" placeholder="Unlimited" />
+                    <span asp-validation-for="Input.MaxAccessCount" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Input.ExpiresAt" class="form-label">Expires at</label>
+                    <input asp-for="Input.ExpiresAt" class="form-control" type="datetime-local" />
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+                <button type="submit" class="btn btn-dark">Create share</button>
+                <a asp-page="/Dashboard/Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleSections() {
+            const isFile = document.getElementById('typeFile').checked;
+            document.getElementById('fileSection').style.display = isFile ? '' : 'none';
+            document.getElementById('secretSection').style.display = isFile ? 'none' : '';
+        }
+        document.getElementById('typeFile').addEventListener('change', toggleSections);
+        document.getElementById('typeSecret').addEventListener('change', toggleSections);
+    </script>
+}

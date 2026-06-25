@@ -1,24 +1,32 @@
 #!/bin/bash
 # deploy/update-image.sh
-# Rebuilds the Docker image and updates the Container App to the new image.
+# Rebuilds the Docker image locally, pushes it to the registry, and
+# triggers a new Container App revision to pull the updated image.
 # Run after every code change that should go to production.
 
 set -euo pipefail
 
 RESOURCE_GROUP="rg-onetimeshare"
 ACA_APP="onetimeshare"
-ACR_NAME=""          # e.g. acronetimeshare12345
 
-echo "==> Building and pushing new image via ACR..."
-az acr build \
-  --registry "$ACR_NAME" \
-  --image "onetimeshare:latest" \
-  ..
+# Must match the IMAGE value used in deploy-app.sh
+IMAGE=""   # e.g. docker.io/yourusername/onetimeshare:latest
 
-echo "==> Restarting Container App to pick up new image..."
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+echo "==> Building Docker image: ${IMAGE}"
+docker build \
+  --platform linux/amd64 \
+  -t "${IMAGE}" \
+  "${REPO_ROOT}"
+
+echo "==> Pushing image to registry..."
+docker push "${IMAGE}"
+
+echo "==> Updating Container App to new image revision..."
 az containerapp update \
   --name "$ACA_APP" \
   --resource-group "$RESOURCE_GROUP" \
-  --image "$(az acr show --name $ACR_NAME --query loginServer -o tsv)/onetimeshare:latest"
+  --image "${IMAGE}"
 
 echo "==> Update complete."

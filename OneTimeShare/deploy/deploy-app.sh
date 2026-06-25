@@ -1,32 +1,44 @@
 #!/bin/bash
 # deploy/deploy-app.sh
 # Creates or updates the Container App with all required environment variables.
-# Run after azure-setup.sh.  Re-run on every deployment to update the image.
+# The Docker image is pulled from Docker Hub (or another registry) – no ACR needed.
+# Run after azure-setup.sh and build-push.sh.
+# Re-run to update environment variables or to redeploy after an image change.
 
 set -euo pipefail
 
 ###############################################
-# Fill in these values from azure-setup.sh   #
+# Fill in these values                        #
 ###############################################
 RESOURCE_GROUP="rg-onetimeshare"
 ACA_ENV="aca-env-onetimeshare"
 ACA_APP="onetimeshare"
-ACR_SERVER=""                     # e.g. acronetimeshare12345.azurecr.io
-ACR_NAME=""                       # e.g. acronetimeshare12345
-ACR_PASSWORD=""
 
-BLOB_CONNECTION_STRING=""         # Azure Storage connection string
+# Full image reference built by build-push.sh, e.g.:
+#   docker.io/yourusername/onetimeshare:latest
+#   ghcr.io/yourusername/onetimeshare:latest
+IMAGE=""
+
+# Registry credentials so Container Apps can pull the image.
+# Docker Hub: your Docker Hub username and a Personal Access Token
+#   (Hub → Account Settings → Personal access tokens → New token, scope: Read)
+# GitHub GHCR: your GitHub username and a PAT with read:packages scope
+REGISTRY_SERVER=""      # e.g. docker.io  or  ghcr.io
+REGISTRY_USERNAME=""
+REGISTRY_PASSWORD=""    # PAT / access token – never a plain password
+
+BLOB_CONNECTION_STRING=""   # from azure-setup.sh
 
 # Generate a 32-byte master key once and store it safely:
 #   openssl rand -base64 32
 MASTER_ENCRYPTION_KEY=""
 
-# First admin (only used when no admin exists in DB)
+# First admin – only used when no admin exists in the DB
 SEED_ADMIN_USERNAME="admin"
-SEED_ADMIN_PASSWORD=""            # Change this!
+SEED_ADMIN_PASSWORD=""      # Change this!
 SEED_ADMIN_DISPLAYNAME="Administrator"
 
-IMAGE="${ACR_SERVER}/onetimeshare:latest"
+###############################################
 
 echo "==> Deploying Container App: $ACA_APP"
 
@@ -35,9 +47,9 @@ az containerapp create \
   --resource-group "$RESOURCE_GROUP" \
   --environment "$ACA_ENV" \
   --image "$IMAGE" \
-  --registry-server "$ACR_SERVER" \
-  --registry-username "$ACR_NAME" \
-  --registry-password "$ACR_PASSWORD" \
+  --registry-server "$REGISTRY_SERVER" \
+  --registry-username "$REGISTRY_USERNAME" \
+  --registry-password "$REGISTRY_PASSWORD" \
   --ingress external \
   --target-port 8080 \
   --min-replicas 0 \

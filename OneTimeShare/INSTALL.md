@@ -7,11 +7,12 @@
 3. [Local Development Setup](#local-development-setup)
 4. [First-Admin Bootstrap](#first-admin-bootstrap)
 5. [Azure Resource Creation](#azure-resource-creation)
-6. [Deployment to Azure Container Apps](#deployment-to-azure-container-apps)
-7. [Custom Domain Setup](#custom-domain-setup)
-8. [Backup and Restore](#backup-and-restore)
-9. [Operational Maintenance](#operational-maintenance)
-10. [Security Notes](#security-notes)
+6. [Building and Pushing the Docker Image](#building-and-pushing-the-docker-image)
+7. [Deployment to Azure Container Apps](#deployment-to-azure-container-apps)
+8. [Custom Domain Setup](#custom-domain-setup)
+9. [Backup and Restore](#backup-and-restore)
+10. [Operational Maintenance](#operational-maintenance)
+11. [Security Notes](#security-notes)
 
 ---
 
@@ -40,8 +41,13 @@ OneTimeShare is an ASP.NET Core 9 Razor Pages application that lets authenticate
 
 ### Azure deployment
 
+- **Docker Desktop** with a **Professional (or higher) license** — required to build and push the production image locally.
 - Azure CLI ≥ 2.60 (`az --version`)
-- Active Azure subscription with permission to create resource groups, storage accounts, container registries, and Container Apps.
+- Active Azure subscription with permission to create resource groups, storage accounts, and Container Apps.  
+  **Azure Container Registry is not required and not used.**
+- A container registry account to store the image. Docker Hub is the recommended option:
+  - [Docker Hub](https://hub.docker.com/) — free public repos; private repos require a paid plan. A Professional Docker license already includes private repos.
+  - [GitHub Container Registry (ghcr.io)](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) — alternative if you host the code on GitHub.
 - Bash shell (Linux, macOS, or WSL on Windows) to run the deployment scripts.
 - **No Entra ID / Azure AD access required.**
 
@@ -124,10 +130,11 @@ This script creates:
 | Storage account | Hosts both Azure Files and Blob Storage |
 | Azure Files share `otsdata` | Mounted at `/data` — holds SQLite DB and Data Protection keys |
 | Blob container `onetimeshare-assets` | Encrypted file/secret blobs |
-| Azure Container Registry | Stores Docker images |
 | Container Apps environment | Runtime environment |
 
-The script prints the values you will need in the next step. **Copy them.**
+> **No Azure Container Registry is created.** The Docker image is built locally and pushed to an external registry (see next section).
+
+The script prints the values you will need in `deploy-app.sh`. **Copy them.**
 
 ### Generating the master encryption key
 
@@ -135,33 +142,86 @@ The script prints the values you will need in the next step. **Copy them.**
 openssl rand -base64 32
 ```
 
-Store this value safely (e.g., password manager, Azure Key Vault note). **If you lose it, all encrypted assets become unreadable.**
+Store this value safely (e.g., password manager). **If you lose it, all encrypted assets become unreadable.**
 
 ---
 
-## 6. Deployment to Azure Container Apps
+## 6. Building and Pushing the Docker Image
 
-Fill in `deploy/deploy-app.sh` with the values from the setup step, then:
+The Docker image is built on your local machine with Docker Desktop and pushed to a container registry. Azure Container Apps will pull from that registry when starting containers.
+
+### Option A — Docker Hub (recommended)
+
+1. Log in to Docker Hub:
+
+   ```bash
+   docker login docker.io
+   ```
+
+2. Edit `deploy/build-push.sh` — set `REGISTRY_HOST=docker.io` and your `REGISTRY_USERNAME`.
+
+3. Build and push:
+
+   ```bash
+   bash deploy/build-push.sh
+   ```
+
+   This produces an image tagged `docker.io/yourusername/onetimeshare:latest`.
+
+   > If you want the image to be **private**, make sure the repository on Docker Hub is set to *Private* before the first push (Hub → Repositories → Create repository → Visibility: Private). With a Docker Professional license, private repositories are included.
+
+### Option B — GitHub Container Registry (ghcr.io)
+
+1. Create a GitHub Personal Access Token with `write:packages` scope.
+
+2. Log in:
+
+   ```bash
+   echo "<YOUR_PAT>" | docker login ghcr.io -u <GITHUB_USERNAME> --password-stdin
+   ```
+
+3. Edit `deploy/build-push.sh` — set `REGISTRY_HOST=ghcr.io` and `REGISTRY_USERNAME=<GITHUB_USERNAME>`.
+
+4. Build and push:
+
+   ```bash
+   bash deploy/build-push.sh
+   ```
+
+### Subsequent deployments
+
+After every code change, run:
+
+```bash
+bash deploy/update-image.sh
+```
+
+This rebuilds the image locally, pushes it, and triggers a new Container App revision.
+
+---
+
+## 7. Deployment to Azure Container Apps
+
+Fill in `deploy/deploy-app.sh` with the values from steps 5 and 6, then:
 
 ```bash
 bash deploy/deploy-app.sh
 ```
 
 The script:
-1. Creates the Container App with scale-to-zero (`--min-replicas 0`) and single-replica maximum.
-2. Mounts the Azure Files share at `/data`.
-3. Sets all required environment variables.
-4. Prints the public HTTPS URL.
+1. Creates the Container App with scale-to-zero (`--min-replicas 0`) and a single-replica maximum.
+2. Configures the registry credentials so Container Apps can pull the image.
+3. Mounts the Azure Files share at `/data`.
+4. Sets all required environment variables.
+5. Prints the public HTTPS URL.
 
 ### Updating the application after code changes
 
 ```bash
-cd deploy
-# Edit ACR_NAME in update-image.sh
-bash update-image.sh
+bash deploy/update-image.sh
 ```
 
-This rebuilds the image via ACR build and updates the Container App revision.
+Edit `IMAGE` at the top of `update-image.sh` to match the full image reference used in `build-push.sh`.
 
 ### Required environment variables
 
@@ -178,7 +238,7 @@ This rebuilds the image via ACR build and updates the Container App revision.
 
 ---
 
-## 7. Custom Domain Setup
+## 8. Custom Domain Setup
 
 1. In the Azure Portal, open the Container App → **Custom domains** → **Add custom domain**.
 2. Copy the CNAME/TXT verification values shown.
@@ -190,7 +250,7 @@ This rebuilds the image via ACR build and updates the Container App revision.
 
 ---
 
-## 8. Backup and Restore
+## 9. Backup and Restore
 
 ### Database backup
 
@@ -235,7 +295,7 @@ azcopy copy "https://<STORAGE_ACCOUNT>.blob.core.windows.net/onetimeshare-assets
 
 ---
 
-## 9. Operational Maintenance
+## 10. Operational Maintenance
 
 ### Viewing logs
 
@@ -279,7 +339,7 @@ This deletes all resources including the database and all blobs. There is no rec
 
 ---
 
-## 10. Security Notes
+## 11. Security Notes
 
 - **Master key**: Store the `Encryption__MasterKey` value in a separate secrets manager (e.g., a password vault). It is the only key protecting all stored content.
 - **Seed admin password**: Remove or blank `SeedAdmin__Password` from environment variables after the first admin logs in, or after creating a replacement admin account.

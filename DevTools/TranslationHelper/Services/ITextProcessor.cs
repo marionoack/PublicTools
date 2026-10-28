@@ -12,5 +12,7 @@ public interface ITextProcessor
         TargetLanguage targetLanguage,
         TextFormat inputFormat,
         Tone tone,
-        Audience audience);
+        Audience audience,
+        ModelQuality quality,
+        Scope? scope);
 }

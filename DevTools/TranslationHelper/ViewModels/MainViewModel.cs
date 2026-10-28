@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly ClipboardService _clipboard;
     private readonly MarkdownService _markdown;
     private readonly SettingsService _settingsService;
+    private readonly ScopeService _scopeService;
     private BedrockProcessor _processor;
     private AppSettings _settings;
 
@@ -24,16 +26,22 @@ public class MainViewModel : INotifyPropertyChanged
     private bool _isProcessing;
     private Tone _selectedTone;
     private Audience _selectedAudience;
+    private ModelQuality _selectedQuality;
+    private InputFont _inputFont;
+    private int _inputFontSizeLevel;
+    private Scope _selectedScope = Scope.None;
 
     public MainViewModel(
         ClipboardService clipboard,
         MarkdownService markdown,
         SettingsService settingsService,
+        ScopeService scopeService,
         AppSettings settings)
     {
         _clipboard = clipboard;
         _markdown = markdown;
         _settingsService = settingsService;
+        _scopeService = scopeService;
         _settings = settings;
         _processor = new BedrockProcessor(settings);
 
@@ -41,6 +49,11 @@ public class MainViewModel : INotifyPropertyChanged
         _selectedTargetLanguage = settings.DefaultLanguage;
         _selectedInputFormat = settings.DefaultFormat;
         _selectedExportFormat = settings.DefaultFormat;
+        _selectedQuality = settings.DefaultQuality;
+        _inputFont = Enum.IsDefined(settings.InputFont) ? settings.InputFont : InputFont.Fixed;
+        _inputFontSizeLevel = Math.Clamp(settings.InputFontSizeLevel, 1, 5);
+
+        ReloadScopes();
 
         PasteCommand = new RelayCommand(_ => ExecutePaste());
         CopyResultCommand = new RelayCommand(_ => ExecuteCopyResult(), _ => !string.IsNullOrEmpty(ResultText));
@@ -51,6 +64,74 @@ public class MainViewModel : INotifyPropertyChanged
         SetInputFormatCommand = new RelayCommand(p => { if (p is TextFormat f) SelectedInputFormat = f; });
         SetExportFormatCommand = new RelayCommand(p => { if (p is TextFormat f) SelectedExportFormat = f; });
     }
+
+    public string WindowTitle => $"TranslationHelper – Build {BuildInfo.BuildDate}";
+
+    public ObservableCollection<Scope> ScopeOptions { get; } = new();
+
+    public Scope SelectedScope
+    {
+        get => _selectedScope;
+        set { _selectedScope = value ?? Scope.None; OnPropertyChanged(); }
+    }
+
+    public ModelQuality SelectedQuality
+    {
+        get => _selectedQuality;
+        set { _selectedQuality = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsQualitySimple)); OnPropertyChanged(nameof(IsQualityPrecise)); }
+    }
+
+    public bool IsQualitySimple { get => SelectedQuality == ModelQuality.Simple; set { if (value) SelectedQuality = ModelQuality.Simple; } }
+    public bool IsQualityPrecise { get => SelectedQuality == ModelQuality.Precise; set { if (value) SelectedQuality = ModelQuality.Precise; } }
+
+    public IReadOnlyList<KeyValuePair<InputFont, string>> InputFontOptions { get; } =
+    [
+        new(InputFont.Fixed, "Fixed"),
+        new(InputFont.Serif, "Serif"),
+        new(InputFont.Sans, "Sans")
+    ];
+
+    public IReadOnlyList<int> InputFontSizeOptions { get; } = [1, 2, 3, 4, 5];
+
+    private static readonly double[] _fontSizes = [11, 13, 15, 18, 22];
+
+    public InputFont SelectedInputFont
+    {
+        get => _inputFont;
+        set
+        {
+            if (_inputFont == value) return;
+            _inputFont = value;
+            _settings.InputFont = value;
+            _settingsService.Save(_settings);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(InputFontFamily));
+        }
+    }
+
+    public int InputFontSizeLevel
+    {
+        get => _inputFontSizeLevel;
+        set
+        {
+            value = Math.Clamp(value, 1, 5);
+            if (_inputFontSizeLevel == value) return;
+            _inputFontSizeLevel = value;
+            _settings.InputFontSizeLevel = value;
+            _settingsService.Save(_settings);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(InputFontSize));
+        }
+    }
+
+    public System.Windows.Media.FontFamily InputFontFamily => _inputFont switch
+    {
+        InputFont.Serif => new System.Windows.Media.FontFamily("Georgia"),
+        InputFont.Sans => new System.Windows.Media.FontFamily("Segoe UI"),
+        _ => new System.Windows.Media.FontFamily("Consolas")
+    };
+
+    public double InputFontSize => _fontSizes[_inputFontSizeLevel - 1];
 
     public string InputText
     {
@@ -238,7 +319,9 @@ public class MainViewModel : INotifyPropertyChanged
             SelectedTargetLanguage,
             SelectedInputFormat,
             SelectedTone,
-            SelectedAudience);
+            SelectedAudience,
+            SelectedQuality,
+            SelectedScope);
 
         IsProcessing = false;
 
@@ -255,12 +338,28 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void ExecuteOpenSettings()
     {
-        var settingsWindow = new Views.SettingsWindow(_settings, _settingsService);
+        var settingsWindow = new Views.SettingsWindow(_settings, _settingsService, _scopeService)
+        {
+            Owner = System.Windows.Application.Current?.MainWindow
+        };
         settingsWindow.ShowDialog();
 
         // Reload settings after dialog closes
         _settings = _settingsService.Load();
         _processor.UpdateSettings(_settings);
+        ReloadScopes();
+    }
+
+    private void ReloadScopes()
+    {
+        var previous = SelectedScope.IsNone ? null : SelectedScope.Name;
+
+        ScopeOptions.Clear();
+        ScopeOptions.Add(Scope.None);
+        foreach (var s in _scopeService.Load())
+            ScopeOptions.Add(s);
+
+        SelectedScope = ScopeOptions.FirstOrDefault(s => !s.IsNone && s.Name == previous) ?? Scope.None;
     }
 
     public void UpdateSettings(AppSettings settings)

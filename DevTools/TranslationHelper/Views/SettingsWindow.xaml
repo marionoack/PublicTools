@@ -2,9 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Einstellungen – TranslationHelper"
-        Width="480" Height="340"
+        Width="640" Height="520"
+        MinWidth="560" MinHeight="420"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
         ShowInTaskbar="False">
 
     <Window.Resources>
@@ -18,39 +18,109 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="140"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0" Content="Access Key ID:"/>
-        <TextBox Grid.Row="0" Grid.Column="1" x:Name="AccessKeyBox" Margin="0,4"/>
+        <TabControl Grid.Row="0">
+            <TabItem Header="Allgemein">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="1" Grid.Column="0" Content="Secret Access Key:"/>
-        <PasswordBox Grid.Row="1" Grid.Column="1" x:Name="SecretKeyBox" Padding="4,3" Margin="0,4" VerticalContentAlignment="Center"/>
+                    <Label Grid.Row="0" Grid.Column="0" Content="Access Key ID:"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="AccessKeyBox" Margin="0,4"/>
 
-        <Label Grid.Row="2" Grid.Column="0" Content="AWS Region:"/>
-        <TextBox Grid.Row="2" Grid.Column="1" x:Name="RegionBox" Margin="0,4"/>
+                    <Label Grid.Row="1" Grid.Column="0" Content="Secret Access Key:"/>
+                    <PasswordBox Grid.Row="1" Grid.Column="1" x:Name="SecretKeyBox" Padding="4,3" Margin="0,4" VerticalContentAlignment="Center"/>
 
-        <Label Grid.Row="3" Grid.Column="0" Content="Model ID:"/>
-        <TextBox Grid.Row="3" Grid.Column="1" x:Name="ModelIdBox" Margin="0,4"/>
+                    <Label Grid.Row="2" Grid.Column="0" Content="AWS Region:"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" x:Name="RegionBox" Margin="0,4"/>
 
-        <TextBlock Grid.Row="4" Grid.ColumnSpan="2"
-                   Text="Beispiel-Model: anthropic.claude-sonnet-4-5 | Region: us-east-1"
-                   Foreground="Gray" FontSize="11" Margin="0,4,0,0"/>
+                    <Label Grid.Row="3" Grid.Column="0" Content="Model ID (Einfach):"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="ModelIdBox" Margin="0,4"/>
 
-        <StackPanel Grid.Row="6" Grid.ColumnSpan="2"
-                    Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Label Grid.Row="4" Grid.Column="0" Content="Model ID (Genau):"/>
+                    <TextBox Grid.Row="4" Grid.Column="1" x:Name="ModelIdPreciseBox" Margin="0,4"/>
+
+                    <Label Grid.Row="5" Grid.Column="0" Content="Standard-Modell:"/>
+                    <ComboBox Grid.Row="5" Grid.Column="1" x:Name="DefaultQualityBox" Margin="0,4" Padding="4,3"
+                              HorizontalAlignment="Left" MinWidth="120"/>
+
+                    <TextBlock Grid.Row="6" Grid.ColumnSpan="2"
+                               Text="Beispiel-Model: anthropic.claude-sonnet-4-5 | Region: us-east-1"
+                               Foreground="Gray" FontSize="11" Margin="0,8,0,0"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Scopes &amp; Fachwörterbuch">
+                <Grid Margin="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Scopes" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Margin="0,0,0,4">
+                        <Run Text="Fachwörterbuch des gewählten Scopes" FontWeight="SemiBold"/>
+                        <Run Text="(Deutsch ↔ Englisch)" Foreground="Gray"/>
+                    </TextBlock>
+
+                    <DataGrid Grid.Row="1" Grid.Column="0" x:Name="ScopeGrid"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="True" CanUserDeleteRows="True"
+                              CanUserSortColumns="False" CanUserResizeRows="False"
+                              HeadersVisibility="Column"
+                              SelectionMode="Single" SelectionUnit="FullRow"
+                              GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Width="*"
+                                                Binding="{Binding Name, UpdateSourceTrigger=LostFocus}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <DataGrid Grid.Row="1" Grid.Column="2" x:Name="GlossaryGrid"
+                              ItemsSource="{Binding SelectedItem.Entries, ElementName=ScopeGrid}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="True" CanUserDeleteRows="True"
+                              CanUserSortColumns="False" CanUserResizeRows="False"
+                              HeadersVisibility="Column"
+                              GridLinesVisibility="All">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Deutsch" Width="*"
+                                                Binding="{Binding German, UpdateSourceTrigger=LostFocus}"/>
+                            <DataGridTextColumn Header="Englisch" Width="*"
+                                                Binding="{Binding English, UpdateSourceTrigger=LostFocus}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Foreground="Gray" FontSize="11"
+                               TextWrapping="Wrap" Margin="0,8,0,0"
+                               Text="Neue Zeile: in die leere letzte Zeile schreiben. Zeile löschen: markieren und Entf. Das Wörterbuch gilt nur, wenn der Scope im Hauptfenster gewählt ist. Gespeichert in %APPDATA%\TranslationHelper\scopes.json."/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
             <Button Content="Speichern" Width="90" Margin="0,0,8,0" IsDefault="True" Click="SaveButton_Click"/>
             <Button Content="Abbrechen" Width="90" IsCancel="True" Click="CancelButton_Click"/>
         </StackPanel>

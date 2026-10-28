@@ -11,12 +11,13 @@ public partial class App : Application
         base.OnStartup(e);
 
         var settingsService = new SettingsService();
+        var scopeService = new ScopeService();
         var settings = settingsService.Load();
 
         var clipboard = new ClipboardService();
         var markdown = new MarkdownService();
 
-        var viewModel = new MainViewModel(clipboard, markdown, settingsService, settings);
+        var viewModel = new MainViewModel(clipboard, markdown, settingsService, scopeService, settings);
 
         var mainWindow = new MainWindow(viewModel);
         mainWindow.Show();

@@ -1,0 +1,50 @@
+From: Max Mustermann <max.mustermann@example.com>
+To: Erika Beispiel <erika.beispiel@example.com>
+Cc: Team <team@example.com>
+Subject: Testnachricht mit Anhang
+Date: Tue, 06 Oct 2026 10:00:00 +0200
+Message-ID: <abc123@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="OUTER-BOUNDARY"
+
+--OUTER-BOUNDARY
+Content-Type: multipart/alternative; boundary="ALT-BOUNDARY"
+
+--ALT-BOUNDARY
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+Hallo Erika,
+
+das ist der eigentliche Nachrichtentext mit wichtigem Inhalt: äöüÄÖÜß.
+
+Viele Grüße
+Max
+
+--
+Max Mustermann
+Beispiel GmbH
+Diese E-Mail enthält vertrauliche Informationen.
+
+--ALT-BOUNDARY
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"></head><body>
+<p>Hallo Erika,</p>
+<p>das ist der eigentliche Nachrichtentext mit wichtigem Inhalt: äöüÄÖÜß.</p>
+<p>Viele Grüße<br/>Max</p>
+<div>-- </div>
+<div>Max Mustermann<br/>Beispiel GmbH<br/>Diese E-Mail enthält vertrauliche Informationen.</div>
+</body></html>
+
+--ALT-BOUNDARY--
+
+--OUTER-BOUNDARY
+Content-Type: text/plain; name="notiz.txt"
+Content-Disposition: attachment; filename="notiz.txt"
+Content-Transfer-Encoding: base64
+
+SGVsbG8gVGVzdCBBdHRhY2htZW50IENvbnRlbnQ=
+
+--OUTER-BOUNDARY--

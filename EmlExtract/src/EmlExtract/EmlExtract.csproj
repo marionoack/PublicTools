@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\EmlExtract.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>BuildDate</_Parameter1>
+      <_Parameter2>$([System.DateTime]::Now.ToString("dd.MM.yyyy"))</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="1.8.3" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="EmailReplyParser" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.161" />
+    <PackageReference Include="MimeKit" Version="4.18.1" />
+    <PackageReference Include="MsgReader" Version="6.1.4" />
+    <PackageReference Include="ReverseMarkdown" Version="6.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\EmlExtract.ico" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,102 @@
+﻿<Window x:Class="ApplicationStarter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ApplicationStarter"
+        mc:Ignorable="d"
+        Title="Application Starter" Height="820" Width="1400" MinWidth="1000" MinHeight="620"
+        Icon="Assets/Launcher.ico" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown"
+        FocusManager.FocusedElement="{Binding ElementName=ShortcutFilter}">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="#1A2E4A" Padding="18,12">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="ImportButton" Content="Import..." Click="Import_Click"/>
+                    <Button x:Name="ExportButton" Content="Export..." Click="Export_Click"/>
+                    <Button Content="Benutzerkonten..." Click="Profiles_Click"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Application Starter" Foreground="White" FontSize="24" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="AccountLabel" Foreground="#C5D8E9" Margin="0,3,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+        <TextBlock x:Name="Status" DockPanel.Dock="Bottom" Margin="14,8" TextWrapping="Wrap"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="330"/><ColumnDefinition Width="5"/><ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel Margin="10">
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="Verknuepfungen" FontSize="19" Margin="4,8"/>
+                    <TextBlock Text="Schnellsuche (Name)" Margin="4,4,4,0"/>
+                    <TextBox x:Name="ShortcutFilter" Margin="3" TextChanged="ShortcutFilter_TextChanged"
+                             AutomationProperties.Name="Schnellsuche"
+                             ToolTip="Sofort nach Namen filtern. Esc leert die Suche."/>
+                    <TextBlock Text="Strg+1 bis Strg+9: Treffer direkt starten" FontSize="11" Foreground="DimGray" Margin="4,2,4,8"/>
+                    <WrapPanel>
+                        <Button x:Name="NewButton" Click="New_Click" ToolTip="Neu (Strg+I)" AutomationProperties.Name="Neue Verknuepfung">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE710;"/>
+                        </Button>
+                        <Button x:Name="EditButton" Click="Edit_Click" ToolTip="Bearbeiten (Strg+E)" AutomationProperties.Name="Verknuepfung bearbeiten">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70F;"/>
+                        </Button>
+                        <Button x:Name="DuplicateButton" Click="Duplicate_Click" ToolTip="Duplizieren (Strg+D)" AutomationProperties.Name="Verknuepfung duplizieren">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8C8;"/>
+                        </Button>
+                        <Button Click="Delete_Click" ToolTip="Loeschen" AutomationProperties.Name="Verknuepfung loeschen">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74D;"/>
+                        </Button>
+                        <Button x:Name="MoveUpButton" Click="MoveUp_Click" ToolTip="Nach oben (Alt+Pfeil oben)" AutomationProperties.Name="Verknuepfung nach oben">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70E;"/>
+                        </Button>
+                        <Button x:Name="MoveDownButton" Click="MoveDown_Click" ToolTip="Nach unten (Alt+Pfeil unten)" AutomationProperties.Name="Verknuepfung nach unten">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70D;"/>
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
+                <Button x:Name="StartButton" DockPanel.Dock="Bottom" Content="Ausgewaehlte Verknuepfung starten"
+                        Padding="10" Margin="3,12,3,3" Click="Start_Click"/>
+                <ListBox x:Name="ShortcutsList" MouseDoubleClick="Shortcut_DoubleClick" HorizontalContentAlignment="Stretch"
+                         PreviewTextInput="ShortcutsList_PreviewTextInput" IsTextSearchEnabled="False">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="3,4">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="38"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                <Image Source="{Binding Icon}" Width="28" Height="28" VerticalAlignment="Top"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding Shortcut.Name}"/>
+                                    <TextBlock Text="{Binding AccountName}" FontSize="11" Foreground="DimGray"
+                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding Profile.DisplayName}"/>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
+            <TabControl x:Name="Workspace" Grid.Column="2" Margin="4,10,10,10" SelectionChanged="Workspace_SelectionChanged">
+                <TabItem Header="Start / Hinweise">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="26">
+                            <TextBlock Text="Anwendungen unter dem passenden Windows-Konto starten" FontSize="23" TextWrapping="Wrap" Margin="0,0,0,18"/>
+                            <TextBlock Text="Links eine Verknuepfung doppelt anklicken oder auswaehlen und starten. Programme oeffnen eigene Fenster; Terminals, Dateibrowser und nichtinteraktive Ausfuehrungslogs erscheinen hier als Tabs." TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <TextBlock Text="In Liste/Suche: Strg+I legt eine Verknuepfung an, Strg+E bearbeitet und Strg+D dupliziert sie. Pfeilschaltflaechen oder Alt+Pfeil oben/unten aendern die gespeicherte Reihenfolge; bei aktiver Suche wird mit dem benachbarten sichtbaren Treffer getauscht." TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <TextBlock Text="Export erlaubt eine Auswahl per Checkliste. JSON-Dateien enthalten Kontozuordnungen, aber keine gespeicherten Passwoerter oder Icon-Dateien. Der Import kann vorhandene Eintraege ueberschreiben oder ueberspringen (gleicher Name und Benutzername). Fehlende lokale Kontokonfigurationen erhalten kein Passwort; Zugangsdaten danach unter Benutzerkonten ergaenzen." TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <TextBlock Text="Ausfuehrung startet eine EXE ohne interaktive Eingabe, protokolliert stdout/stderr und zeigt den Exitcode. Die Typen PowerShell 5 und PowerShell 7 erlauben direkt eingefuegten Skripttext, wahlweise als Log-Ausfuehrung oder im Terminal. Im Terminal bleibt PowerShell danach geoeffnet. Abbrechen oder das bestaetigte Schliessen eines laufenden Tabs beendet dessen Prozessbaum." TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <TextBlock Text="Das aktuelle Windows-Konto verwendet die bestehende Anmeldung. Zusaetzliche lokale Konten benoetigen gespeicherte Zugangsdaten und Windows-Anmelderechte. PowerShell 5/7 koennen mit der Option Mit UAC nach regulaerer Windows-UAC-Bestaetigung als Administrator starten. Das ausgewaehlte Konto muss Administrator sein und bleibt erhalten; ein Kontowechsel wird abgelehnt. Ohne diese Option erfolgt keine zusaetzliche Rechteerhoehung. UAC und Richtlinien werden nicht umgangen." TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <TextBlock Text="Profil laden ist pro Verknuepfung konfigurierbar. Es laedt das Windows-Benutzerprofil, nicht einen Desktop und nicht das PowerShell-Startskriptprofil. Umgebungsvariablen in Programm- und Startpfaden werden unter dem Startkonto aufgeloest." TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <TextBlock Text="PowerShell 7 muss global installiert sein. Interaktive Terminals benoetigen Microsoft Edge WebView2 Runtime. Claude Desktop muss fuer das gewaehlte Konto verfuegbar sein; eine WindowsApps-Verknuepfung garantiert das nicht." TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <TextBlock Text="Im Dateibrowser gelten die Berechtigungen des Tab-Kontos. Loeschen ist endgueltig, ohne Papierkorb. Kopieren/Verschieben ist nicht atomar; bei Fehlern koennen bereits kopierte Dateien im Ziel bleiben. Junctions und symbolische Links werden dabei nicht verfolgt." TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <TextBlock Text="Dateien werden mit einer direkt startbaren Dateizuordnung des Zielkontos geoeffnet. Store-/DDE-only-Zuordnungen werden nicht an die aktuelle Windows-Shell delegiert. Programme mit eigener Einzelinstanzlogik koennen ihre eigene Wiederverwendung bestehender Instanzen bestimmen." TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <TextBlock Text="Beim Schliessen eines Terminal-Tabs werden dessen Prozesse beendet. Bereits gestartete GUI-Anwendungen bleiben geoeffnet; ihr Hilfsprozess bleibt bei Bedarf bis zu deren Ende fuer das geladene Benutzerprofil bestehen." TextWrapping="Wrap" Margin="0,0,0,14"/>
+                            <TextBlock x:Name="StorageLabel" Foreground="DimGray" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </DockPanel>
+</Window>

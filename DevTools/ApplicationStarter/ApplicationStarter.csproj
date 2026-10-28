@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <StartupObject>ApplicationStarter.Program</StartupObject>
+    <ApplicationIcon>Assets\Launcher.ico</ApplicationIcon>
+    <BuildTimestamp>$([System.DateTime]::Now.ToString('yyyy-MM-dd HH:mm'))</BuildTimestamp>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="BuildDate" Value="$(BuildTimestamp)" />
+    <Resource Include="Assets\Launcher.ico" />
+    <Content Include="Terminal\index.html" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Terminal\terminal.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="node_modules\@xterm\xterm\lib\xterm.js" Link="Terminal\xterm.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="node_modules\@xterm\xterm\css\xterm.css" Link="Terminal\xterm.css" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="node_modules\@xterm\addon-fit\lib\addon-fit.js" Link="Terminal\addon-fit.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="node_modules\@xterm\xterm\LICENSE" Link="Terminal\xterm-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="node_modules\@xterm\addon-fit\LICENSE" Link="Terminal\addon-fit-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Compile Remove="Tests\**\*.cs" />
+    <EmbeddedResource Remove="Tests\**\*" />
+    <None Remove="Tests\**\*" />
+  </ItemGroup>
+
+  <Target Name="CheckTerminalAssets" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('node_modules\@xterm\xterm\lib\xterm.js')" Text="Terminalressourcen fehlen. Zuerst npm ci im Projektverzeichnis ausfuehren." />
+  </Target>
+</Project>

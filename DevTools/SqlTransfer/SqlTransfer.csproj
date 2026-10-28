@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SqlTransfer</RootNamespace>
+    <AssemblyName>SqlTransfer</AssemblyName>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
+  </ItemGroup>
+
+  <!-- Build-Zeitpunkt als Konstante, wird in der Titelleiste angezeigt (AssemblyInfo wird bei Inkrementell-Builds nicht neu erzeugt) -->
+  <Target Name="GenerateBuildDate" BeforeTargets="BeforeCompile;MarkupCompilePass1">
+    <PropertyGroup>
+      <BuildDateFile>$(IntermediateOutputPath)BuildDate.g.cs</BuildDateFile>
+      <BuildDateValue>$([System.DateTime]::Now.ToString('yyyy-MM-dd HH:mm'))</BuildDateValue>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(BuildDateFile)" Overwrite="true" WriteOnlyWhenDifferent="true"
+                      Lines="namespace SqlTransfer.Infrastructure%3B internal static class GeneratedBuildDate { public const string Value = &quot;$(BuildDateValue)&quot;%3B }" />
+    <ItemGroup>
+      <Compile Include="$(BuildDateFile)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

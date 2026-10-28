@@ -1,0 +1,68 @@
+<Window x:Class="SqlTransfer.Views.ServersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:inf="clr-namespace:SqlTransfer.Infrastructure"
+        Icon="pack://application:,,,/Assets/app.ico"
+        Title="{inf:T Srv_Title}" Width="780" Height="560" MinWidth="700" MinHeight="520"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="{inf:T Srv_List}" Style="{StaticResource CardHeader}" />
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,10,0,0">
+                    <Button Content="{inf:T Srv_Add}" Command="{Binding AddCommand}" Margin="0,0,6,0" />
+                    <Button Content="{inf:T Srv_Remove}" Command="{Binding RemoveCommand}" />
+                </StackPanel>
+                <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" DisplayMemberPath="DisplayName" />
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}" IsEnabled="{Binding HasSelection}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel DataContext="{Binding Selected}">
+                    <TextBlock Text="{inf:T Srv_Name}" Style="{StaticResource FieldLabel}" Margin="0,0,0,3" />
+                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Text="{inf:T Srv_DataSource}" Style="{StaticResource FieldLabel}" />
+                    <TextBox Text="{Binding DataSource, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Text="{inf:T Srv_Auth}" Style="{StaticResource FieldLabel}" />
+                    <RadioButton Content="{inf:T Srv_WinAuth}" IsChecked="{Binding UseWindowsAuth}" GroupName="Auth" Margin="0,0,0,4" />
+                    <RadioButton Content="{inf:T Srv_SqlAuth}" IsChecked="{Binding UseSqlAuth}" GroupName="Auth" />
+
+                    <StackPanel Margin="20,0,0,0" IsEnabled="{Binding UseSqlAuth}">
+                        <TextBlock Text="{inf:T Srv_User}" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="{inf:T Srv_Password}" Style="{StaticResource FieldLabel}" />
+                        <PasswordBox x:Name="PasswordBox" Padding="4" PasswordChanged="PasswordBox_PasswordChanged" />
+                        <TextBlock Text="{inf:T Srv_PasswordNote}" Style="{StaticResource Muted}" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <TextBlock Text="{inf:T Srv_BackupPath}" Style="{StaticResource FieldLabel}" Margin="0,14,0,3" />
+                    <TextBox Text="{Binding BackupPath, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="{inf:T Srv_BackupPathHint}" Style="{StaticResource Muted}" Margin="0,4,0,0" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <DockPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,12,0,0">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                <Button Content="{inf:T Srv_Save}" Style="{StaticResource PrimaryButton}" IsDefault="True" Click="Save_Click" Margin="0,0,8,0" />
+                <Button Content="{inf:T Cancel}" IsCancel="True" Padding="20,7" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                <Button Content="{inf:T Test}" Command="{Binding TestCommand}" VerticalAlignment="Top" />
+                <TextBlock Text="{Binding TestResult}" Style="{StaticResource Muted}" Margin="12,4,0,0" MaxWidth="400" />
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>
